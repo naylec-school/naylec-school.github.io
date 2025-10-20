@@ -1,7 +1,14 @@
+// ===== DOM ELEMENTS =====
 const output = document.getElementById("output")
 const commandInput = document.getElementById("command-input")
 const typedText = document.getElementById("typed-text")
 
+// ===== STATE MANAGEMENT =====
+const commandHistory = []
+let historyIndex = -1
+let currentInput = ""
+
+// ===== ASCII ART =====
 const asciiArt = `
    ██████╗███████╗██╗  ██╗   ██╗ █████╗ ███╗   ██╗
   ██╔════╝██╔════╝██║  ╚██╗ ██╔╝██╔══██╗████╗  ██║
@@ -11,6 +18,7 @@ const asciiArt = `
    ╚═════╝╚══════╝╚══════╝╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝
 `
 
+// ===== CV DATA =====
 const cvData = {
   profil: {
     nom: "Célyan MICOL",
@@ -99,6 +107,7 @@ const cvData = {
   ],
 }
 
+// ===== COMMAND HANDLERS =====
 const commands = {
   help: () => {
     return `
@@ -124,7 +133,7 @@ const commands = {
 <div class="item">
   <span class="item-title">${cvData.profil.nom}</span>
   <div class="item-description">
-    🔗 GitHub: <a href="${cvData.profil.github}" target="_blank" class="link">${cvData.profil.github}</a>
+    🔗 GitHub: <a href="${cvData.profil.github}" target="_blank" rel="noopener noreferrer" class="link">${cvData.profil.github}</a>
   </div>
   <div class="item-description">
     ${cvData.profil.description}
@@ -209,7 +218,7 @@ const commands = {
     return `
 <span class="section-title">📧 CONTACT</span>
 <div class="item">
-  <div class="item-description">🔗 GitHub: <a href="${cvData.profil.github}" target="_blank" class="link">${cvData.profil.github}</a></div>
+  <div class="item-description">🔗 GitHub: <a href="${cvData.profil.github}" target="_blank" rel="noopener noreferrer" class="link">${cvData.profil.github}</a></div>
   <div class="item-description">💼 LinkedIn: <span class="info">À ajouter</span></div>
   <div class="item-description">📧 Email: <span class="info">À ajouter</span></div>
 </div>`
@@ -234,12 +243,15 @@ const commands = {
   },
 }
 
+// ===== UTILITY FUNCTIONS =====
 function printOutput(text, className = "") {
-  const line = document.createElement("div")
-  line.className = `output-line ${className}`
-  line.innerHTML = text
-  output.appendChild(line)
-  output.parentElement.scrollTop = output.parentElement.scrollHeight
+  requestAnimationFrame(() => {
+    const line = document.createElement("div")
+    line.className = `output-line ${className}`
+    line.innerHTML = text
+    output.appendChild(line)
+    output.parentElement.scrollTop = output.parentElement.scrollHeight
+  })
 }
 
 function processCommand(cmd) {
@@ -250,6 +262,11 @@ function processCommand(cmd) {
   if (trimmedCmd === "") {
     return
   }
+
+  if (trimmedCmd && (commandHistory.length === 0 || commandHistory[commandHistory.length - 1] !== trimmedCmd)) {
+    commandHistory.push(trimmedCmd)
+  }
+  historyIndex = commandHistory.length
 
   if (commands[trimmedCmd]) {
     const result = commands[trimmedCmd]()
@@ -265,8 +282,30 @@ function processCommand(cmd) {
   }
 }
 
+function autocomplete(partial) {
+  const availableCommands = Object.keys(commands)
+  const matches = availableCommands.filter((cmd) => cmd.startsWith(partial.toLowerCase()))
+
+  if (matches.length === 1) {
+    return matches[0]
+  } else if (matches.length > 1) {
+    let commonPrefix = matches[0]
+    for (let i = 1; i < matches.length; i++) {
+      let j = 0
+      while (j < commonPrefix.length && j < matches[i].length && commonPrefix[j] === matches[i][j]) {
+        j++
+      }
+      commonPrefix = commonPrefix.substring(0, j)
+    }
+    return commonPrefix
+  }
+  return partial
+}
+
+// ===== EVENT LISTENERS =====
 commandInput.addEventListener("input", (e) => {
   typedText.textContent = e.target.value
+  currentInput = e.target.value
 })
 
 commandInput.addEventListener("keydown", (e) => {
@@ -274,11 +313,51 @@ commandInput.addEventListener("keydown", (e) => {
     const cmd = commandInput.value
     processCommand(cmd)
     commandInput.value = ""
-    typedText.textContent = "" // Clear typed text display
+    typedText.textContent = ""
+    currentInput = ""
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault()
+    if (commandHistory.length > 0) {
+      if (historyIndex === commandHistory.length) {
+        currentInput = commandInput.value
+      }
+      if (historyIndex > 0) {
+        historyIndex--
+        commandInput.value = commandHistory[historyIndex]
+        typedText.textContent = commandHistory[historyIndex]
+      }
+    }
+  } else if (e.key === "ArrowDown") {
+    e.preventDefault()
+    if (historyIndex < commandHistory.length - 1) {
+      historyIndex++
+      commandInput.value = commandHistory[historyIndex]
+      typedText.textContent = commandHistory[historyIndex]
+    } else if (historyIndex === commandHistory.length - 1) {
+      historyIndex = commandHistory.length
+      commandInput.value = currentInput
+      typedText.textContent = currentInput
+    }
+  } else if (e.key === "Tab") {
+    e.preventDefault()
+    const currentValue = commandInput.value.trim()
+    if (currentValue) {
+      const completed = autocomplete(currentValue)
+      commandInput.value = completed
+      typedText.textContent = completed
+    }
+  } else if (e.ctrlKey && e.key === "l") {
+    e.preventDefault()
+    commands.clear()
+  } else if (e.ctrlKey && e.key === "c") {
+    e.preventDefault()
+    commandInput.value = ""
+    typedText.textContent = ""
+    printOutput(`<span class="prompt">visitor@celyan-cv:~$</span> ^C`)
   }
 })
 
-// Message de bienvenue
+// ===== INITIALIZATION =====
 window.addEventListener("load", () => {
   printOutput(`<div class="ascii-art">${asciiArt}</div>`)
   printOutput('<span class="success">Bienvenue sur le CV interactif de Célyan MICOL !</span>', "success")
@@ -290,35 +369,36 @@ window.addEventListener("load", () => {
   commandInput.focus()
 })
 
+// ===== FOCUS MANAGEMENT =====
 const terminal = document.querySelector(".terminal")
 
-// Focus input when clicking anywhere on the terminal
 terminal.addEventListener("click", (e) => {
-  // Prevent focusing if clicking on a link
   if (e.target.tagName !== "A") {
     commandInput.focus()
   }
 })
 
-// Also keep focus when clicking anywhere on the document
 document.addEventListener("click", (e) => {
-  // Prevent focusing if clicking on a link
   if (e.target.tagName !== "A") {
     commandInput.focus()
   }
 })
 
-// For mobile: ensure input stays focused
-terminal.addEventListener("touchstart", (e) => {
-  if (e.target.tagName !== "A") {
-    commandInput.focus()
-  }
-})
+terminal.addEventListener(
+  "touchstart",
+  (e) => {
+    if (e.target.tagName !== "A") {
+      e.preventDefault()
+      commandInput.focus()
+    }
+  },
+  { passive: false },
+)
 
-// Prevent input from losing focus
 commandInput.addEventListener("blur", () => {
-  // Small delay to allow other interactions to complete
   setTimeout(() => {
-    commandInput.focus()
+    if (document.activeElement.tagName !== "A") {
+      commandInput.focus()
+    }
   }, 0)
 })

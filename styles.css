@@ -1,3 +1,22 @@
+/* Added CSS variables for better maintainability and performance */
+:root {
+  --color-primary: #00ff00;
+  --color-secondary: #00ffff;
+  --color-error: #ff4444;
+  --color-warning: #ffaa00;
+  --color-bg-dark: #0a0a0a;
+  --color-bg-darker: #000;
+  --color-bg-terminal: rgba(0, 0, 0, 0.95);
+  --color-border: #1a1a1a;
+  --color-text-muted: #888;
+  --color-text-light: #aaa;
+  --font-mono: "Courier New", Courier, monospace;
+  --glow-primary: 0 0 10px rgba(0, 255, 0, 0.5);
+  --glow-secondary: 0 0 10px rgba(0, 255, 255, 0.5);
+  --transition-fast: 0.3s ease;
+}
+
+/* ===== RESET & BASE STYLES ===== */
 * {
   margin: 0;
   padding: 0;
@@ -5,25 +24,42 @@
 }
 
 body {
-  font-family: "Courier New", Courier, monospace;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+  font-family: var(--font-mono);
+  background: linear-gradient(135deg, var(--color-bg-dark) 0%, #1a1a2e 100%);
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   padding: 20px;
-  color: #00ff00;
+  color: var(--color-primary);
 }
 
+/* Added screen reader only class for accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ===== TERMINAL CONTAINER ===== */
 .terminal-container {
   width: 100%;
   max-width: 900px;
-  background: rgba(0, 0, 0, 0.95);
+  background: var(--color-bg-terminal);
   border-radius: 8px;
   box-shadow: 0 20px 60px rgba(0, 255, 0, 0.3);
   overflow: hidden;
-  border: 1px solid #00ff00;
+  border: 1px solid var(--color-primary);
   animation: glow 2s ease-in-out infinite alternate;
+  /* Added will-change for better animation performance */
+  will-change: box-shadow;
 }
 
 @keyframes glow {
@@ -35,12 +71,13 @@ body {
   }
 }
 
+/* ===== TERMINAL HEADER ===== */
 .terminal-header {
-  background: #1a1a1a;
+  background: var(--color-border);
   padding: 10px 15px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #00ff00;
+  border-bottom: 1px solid var(--color-primary);
 }
 
 .terminal-buttons {
@@ -69,17 +106,20 @@ body {
 }
 
 .terminal-title {
-  color: #00ff00;
+  color: var(--color-primary);
   font-size: 14px;
   font-weight: bold;
 }
 
+/* ===== TERMINAL BODY ===== */
 .terminal-body {
   padding: 20px;
   min-height: 500px;
   max-height: 70vh;
   overflow-y: auto;
-  background: #000;
+  background: var(--color-bg-darker);
+  /* Added smooth scrolling */
+  scroll-behavior: smooth;
 }
 
 .terminal-body::-webkit-scrollbar {
@@ -87,14 +127,15 @@ body {
 }
 
 .terminal-body::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: var(--color-bg-dark);
 }
 
 .terminal-body::-webkit-scrollbar-thumb {
-  background: #00ff00;
+  background: var(--color-primary);
   border-radius: 5px;
 }
 
+/* ===== OUTPUT STYLES ===== */
 #output {
   margin-bottom: 20px;
 }
@@ -103,6 +144,8 @@ body {
   margin-bottom: 8px;
   line-height: 1.6;
   animation: fadeIn 0.3s ease-in;
+  /* Added will-change for better animation performance */
+  will-change: opacity, transform;
 }
 
 @keyframes fadeIn {
@@ -117,24 +160,24 @@ body {
 }
 
 .command {
-  color: #00ff00;
+  color: var(--color-primary);
   font-weight: bold;
 }
 
 .error {
-  color: #ff4444;
+  color: var(--color-error);
 }
 
 .success {
-  color: #00ffff;
+  color: var(--color-secondary);
 }
 
 .info {
-  color: #ffaa00;
+  color: var(--color-warning);
 }
 
 .section-title {
-  color: #00ffff;
+  color: var(--color-secondary);
   font-size: 18px;
   font-weight: bold;
   margin: 15px 0 10px 0;
@@ -147,50 +190,51 @@ body {
 }
 
 .item-title {
-  color: #00ff00;
+  color: var(--color-primary);
   font-weight: bold;
 }
 
 .item-subtitle {
-  color: #888;
+  color: var(--color-text-muted);
   font-style: italic;
 }
 
 .item-description {
-  color: #aaa;
+  color: var(--color-text-light);
   margin-left: 10px;
 }
 
 .link {
-  color: #00ffff;
+  color: var(--color-secondary);
   text-decoration: underline;
   cursor: pointer;
+  transition: color var(--transition-fast);
 }
 
 .link:hover {
-  color: #00ff00;
+  color: var(--color-primary);
 }
 
+/* ===== INPUT LINE ===== */
 .input-line {
   display: flex;
   align-items: center;
-  gap: 0; /* removed gap to make cursor stick to prompt */
-  position: relative; /* Added for absolute positioning of input */
+  gap: 0;
+  position: relative;
 }
 
 .prompt {
-  color: #00ff00;
+  color: var(--color-primary);
   font-weight: bold;
   white-space: nowrap;
 }
 
-/* Made input transparent but clickable with flex: 1 */
 #command-input {
   background: transparent;
   border: none;
   outline: none;
   color: transparent;
-  font-family: "Courier New", Courier, monospace;
+  font-family: var(--font-mono);
   font-size: 16px;
   caret-color: transparent;
   flex: 1;
@@ -204,17 +248,19 @@ body {
 }
 
 #typed-text {
-  color: #00ff00;
-  font-family: "Courier New", Courier, monospace;
+  color: var(--color-primary);
+  font-family: var(--font-mono);
   font-size: 16px;
   white-space: pre;
   pointer-events: none;
 }
 
 .cursor {
-  color: #00ff00;
+  color: var(--color-primary);
   animation: blink 1s infinite;
   pointer-events: none;
+  /* Added will-change for better animation performance */
+  will-change: opacity;
 }
 
 @keyframes blink {
@@ -228,14 +274,65 @@ body {
   }
 }
 
+/* ===== ASCII ART ===== */
 .ascii-art {
-  color: #00ffff;
+  color: var(--color-secondary);
   font-size: 12px;
   line-height: 1.2;
   white-space: pre;
   margin: 10px 0;
 }
 
+/* ===== TEXT UTILITIES ===== */
+.text-accent {
+  color: var(--color-secondary);
+  text-shadow: var(--glow-secondary);
+}
+
+.text-color {
+  color: var(--color-secondary);
+  text-shadow: var(--glow-secondary);
+}
+
+/* ===== FOOTER ===== */
+footer {
+  width: 100%;
+  max-width: 900px;
+  padding: 15px 20px;
+  text-align: center;
+  background: transparent;
+  margin-top: 20px;
+}
+
+footer a {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  padding: 10px 20px;
+  border-radius: 4px;
+  transition: all var(--transition-fast);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+footer a:hover {
+  background: rgba(0, 255, 0, 0.1);
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+}
+
+footer p {
+  color: var(--color-primary);
+  font-size: 12px;
+  margin: 3px 0;
+  opacity: 0.6;
+  transition: all var(--transition-fast);
+}
+
+footer a:hover p {
+  opacity: 1;
+  text-shadow: var(--glow-primary);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
   .terminal-container {
     max-width: 100%;
@@ -252,5 +349,45 @@ body {
 
   #command-input {
     font-size: 14px;
+  }
+
+  footer {
+    padding: 15px;
+  }
+
+  footer p {
+    font-size: 12px;
+  }
+}
+
+/* Added print styles for better printing */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .terminal-container {
+    border: 1px solid black;
+    box-shadow: none;
+  }
+
+  .cursor {
+    display: none;
+  }
+
+  footer {
+    page-break-before: avoid;
+  }
+}
+
+/* Added reduced motion support for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

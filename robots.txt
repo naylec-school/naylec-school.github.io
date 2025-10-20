@@ -1,0 +1,9 @@
+# robots.txt for Célyan MICOL CV Terminal
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://naylec-school.github.io/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
